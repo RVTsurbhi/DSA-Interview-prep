@@ -15,9 +15,6 @@ function MostFreeTime(strArr) {
   function convertToMinutes(timeStr) {
     let period = timeStr.slice(-2);
     let [hh, min] = timeStr.slice(0, -2).split(":").map(Number);
-    // let item = timeStr.split(":")
-    // let hh = parseInt(item[0])
-    // let mm = parseInt(item[1])
 
     if (period == "AM" && hh === 12) hh += 0;
     if (period == "PM" && hh != 12) hh += 12;
@@ -25,29 +22,49 @@ function MostFreeTime(strArr) {
   }
 
   let n = strArr.length;
-  let timeArr = [];
+  let intervals = [];
   for (let i = 0; i < n; i++) {
     //"10:00AM-12:30PM - 600-102
     let item = strArr[i].split("-");
     const [start, end] = [convertToMinutes(item[0]), convertToMinutes(item[1])];
-    timeArr.push([start, end]);
+    intervals.push([start, end]);
   }
 
   //sort by start time
-  timeArr.sort((a, b) => a[0] - b[0]);
+  intervals.sort((a, b) => a[0] - b[0]);
 
-  console.log("timeArr", timeArr);
+  console.log("intervals", intervals);
 
-  // let start = timeArr[0],
-  //   end = timeArr[1];
   let maxFreeTime = 0;
-  for (let i = 1; i < timeArr.length; i++) {
-    let currTime = timeArr[i];
-    let freetime = currTime[0] - timeArr[i - 1][1];
+  //merge interval
+  let mergeIntervals = [];
+  let start = intervals[0][0];
+  let end = intervals[0][1];
+  for (let i = 1; i < intervals.length; i++) {
+    let currTime = intervals[i];
+    if (currTime[0] <= end) {
+      end = Math.max(current[1], end);
+    } else {
+      mergeIntervals.push([start, end]);
+      start = currTime[0];
+      end = currTime[1];
+    }
+  }
+  mergeIntervals.push([start, end]);
+
+  console.log("mergeIntervals", mergeIntervals);
+
+  //Find max free time
+  start = mergeIntervals[0][0];
+  end = mergeIntervals[0][1];
+  for (let i = 1; i < mergeIntervals.length; i++) {
+    let currTime = mergeIntervals[i];
+    let freetime = currTime[0] - mergeIntervals[i - 1][1];
     if (freetime > maxFreeTime) {
       maxFreeTime = freetime;
     }
   }
+
   console.log("maxFreeTime", maxFreeTime);
   //convert back to hr, min
   let hour = Math.floor(maxFreeTime / 60);
